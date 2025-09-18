@@ -51,10 +51,8 @@ export type ClientMessage =
   | { type: 'GAME_ACTION'; payload: GameActionPayload };
 
 // Server to Client
-export interface RoomJoinedPayload {
-  roomId: string;
-  players: Player[];
-}
+// Assumes the server sends the entire game state when a player joins.
+export type RoomJoinedPayload = GameState;
 
 export interface PlayerJoinedPayload {
   id: string;
@@ -72,7 +70,7 @@ export interface NewChatMessagePayload {
 }
 
 export interface GameUpdatePayload {
-  from: string;
+  from:string;
   action: string;
   details: any;
 }

@@ -8,13 +8,13 @@ interface TicTacToeProps {
 }
 
 const XIcon = () => (
-  <svg className="w-16 h-16 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+  <svg className="w-12 h-12 sm:w-16 sm:h-16 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
   </svg>
 );
 
 const OIcon = () => (
-  <svg className="w-16 h-16 text-secondary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+  <svg className="w-12 h-12 sm:w-16 sm:h-16 text-secondary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 );
@@ -44,12 +44,12 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ gameState, playerId, onMakeMove }
         {getStatusMessage()}
       </div>
        {mySymbol && <p className="mb-4 text-gray-600">Kamu bermain sebagai <span className={`font-bold ${mySymbol === 'X' ? 'text-primary-500' : 'text-secondary-500'}`}>{mySymbol}</span></p>}
-      <div className="grid grid-cols-3 gap-3 p-3 bg-gray-200 rounded-2xl">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-200 rounded-2xl">
         {board.map((cell, index) => (
           <div
             key={index}
             onClick={() => isMyTurn && !cell && !winner && onMakeMove(index)}
-            className={`w-24 h-24 md:w-32 md:h-32 flex items-center justify-center rounded-xl bg-white shadow-md transition-all duration-200
+            className={`w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 flex items-center justify-center rounded-xl bg-white shadow-md transition-all duration-200
             ${isMyTurn && !cell && !winner ? 'cursor-pointer hover:bg-gray-100' : 'cursor-not-allowed'}`}
           >
             {cell === 'X' ? <XIcon /> : cell === 'O' ? <OIcon /> : null}

@@ -18,6 +18,26 @@ const App: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      const match = hash.match(/^#room=([\w-]+)/);
+      if (match && username) {
+        const roomId = match[1];
+        if (!connectionInfo || connectionInfo.roomId !== roomId) {
+          setConnectionInfo({ roomId });
+        }
+      } else if (!match && connectionInfo) {
+        setConnectionInfo(null);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    handleHashChange(); // Initial check
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [username, connectionInfo]);
+
   const handleLogin = useCallback((newUsername: string) => {
     const trimmedUsername = newUsername.trim();
     if (trimmedUsername) {
@@ -29,15 +49,19 @@ const App: React.FC = () => {
   const handleChangeUsername = useCallback(() => {
     localStorage.removeItem('gamehub-username');
     setUsername(null);
-    setConnectionInfo(null);
+    if (window.location.hash) {
+      window.location.hash = '';
+    } else {
+      setConnectionInfo(null);
+    }
   }, []);
 
   const handleJoin = useCallback((roomId: string) => {
-    setConnectionInfo({ roomId });
+    window.location.hash = `room=${roomId.trim()}`;
   }, []);
 
   const handleLeave = useCallback(() => {
-    setConnectionInfo(null);
+    window.location.hash = '';
   }, []);
 
   const renderContent = () => {

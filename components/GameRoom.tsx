@@ -117,24 +117,10 @@ const GameRoom: React.FC<GameRoomProps> = ({ roomId, username, onLeave }) => {
 
       switch (message.type) {
         case 'ROOM_JOINED': {
-          const { roomId: joinedRoomId, players } = message.payload;
-          const me = players.find(p => p.username === username);
-
+          const gameState = message.payload as GameState;
+          const me = gameState.players.find(p => p.username === username);
           if (me) {
-            const initialGameState: GameState = {
-              roomId: joinedRoomId,
-              players,
-              chat: [],
-              game: {
-                board: Array(9).fill(null),
-                turn: '',
-                winner: null,
-                xPlayer: null,
-                oPlayer: null,
-              },
-              hostId: players.length > 0 ? players[0].id : null,
-            };
-            dispatch({ type: 'SET_INITIAL_STATE', payload: initialGameState, playerId: me.id });
+            dispatch({ type: 'SET_INITIAL_STATE', payload: gameState, playerId: me.id });
           } else {
             dispatch({ type: 'SET_ERROR', payload: `Gagal menemukan pengguna "${username}" di dalam room.` });
           }
@@ -228,7 +214,7 @@ const GameRoom: React.FC<GameRoomProps> = ({ roomId, username, onLeave }) => {
     <div className="w-full h-full animate-fade-in">
         <header className="flex flex-wrap justify-between items-center mb-6 gap-4">
             <div>
-              <h1 className="text-4xl font-display font-bold text-gray-800">Tic-Tac-Toe</h1>
+              <h1 className="text-3xl sm:text-4xl font-display font-bold text-gray-800">Tic-Tac-Toe</h1>
                 <div className="flex items-center gap-2 mt-1 relative">
                     <p className="text-gray-600">Room ID: <span className="font-bold text-primary-500">{state.gameState.roomId}</span></p>
                     <button onClick={handleInvite} className="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-800 font-semibold transition-colors" title="Salin ID Room">
@@ -244,18 +230,18 @@ const GameRoom: React.FC<GameRoomProps> = ({ roomId, username, onLeave }) => {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 p-6 bg-white border border-gray-200 rounded-2xl shadow-lg">
+            <div className="lg:col-span-2 p-4 sm:p-6 bg-white border border-gray-200 rounded-2xl shadow-lg">
                 <TicTacToe 
                     gameState={state.gameState.game}
                     playerId={state.playerId}
                     onMakeMove={handleMakeMove}
                 />
             </div>
-            <div className="space-y-6">
-                <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-lg">
+            <div className="lg:col-span-1 flex flex-col gap-6">
+                <div className="p-4 sm:p-6 bg-white border border-gray-200 rounded-2xl shadow-lg">
                     <PlayerList players={state.gameState.players} gameState={state.gameState.game} />
                 </div>
-                 <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-lg h-96">
+                 <div className="p-4 sm:p-6 bg-white border border-gray-200 rounded-2xl shadow-lg flex-1 min-h-[300px] sm:min-h-0">
                     <Chat messages={state.gameState.chat} onSendMessage={handleSendChat} />
                 </div>
             </div>

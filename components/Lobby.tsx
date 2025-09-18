@@ -12,13 +12,6 @@ const EditIcon: React.FC<{ className?: string }> = ({ className }) => (
     </svg>
 );
 
-
-const InfoIcon: React.FC = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-    </svg>
-);
-
 const GameCard: React.FC<{ title: string; description: string; available: boolean }> = ({ title, description, available }) => {
   const baseClasses = "relative p-6 rounded-2xl border-2 transition-all duration-300 text-left";
   const availableClasses = "border-gray-200 bg-white hover:border-primary-400 hover:shadow-lg hover:-translate-y-1 cursor-pointer";
@@ -39,15 +32,14 @@ const GameCard: React.FC<{ title: string; description: string; available: boolea
 
 const Lobby: React.FC<LobbyProps> = ({ username, onJoin, onChangeUsername }) => {
   const [roomId, setRoomId] = useState('');
-  const [error, setError] = useState('');
 
   const handleJoin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (roomId.trim()) {
-      onJoin(roomId.trim());
-    } else {
-      setError('ID Room tidak boleh kosong.');
+    let finalRoomId = roomId.trim();
+    if (!finalRoomId) {
+      finalRoomId = `game-${Math.random().toString(36).substring(2, 8)}`;
     }
+    onJoin(finalRoomId);
   };
 
   return (
@@ -75,10 +67,9 @@ const Lobby: React.FC<LobbyProps> = ({ username, onJoin, onChangeUsername }) => 
             type="text"
             value={roomId}
             onChange={(e) => setRoomId(e.target.value)}
-            placeholder="Masukkan ID Room"
+            placeholder="Masukkan ID Room (atau kosongkan untuk buat baru)"
             className="w-full px-4 py-3 bg-gray-100 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300"
           />
-          {error && <p className="text-red-500 text-sm flex items-center justify-center"><InfoIcon /> {error}</p>}
           <button
             type="submit"
             className="w-full py-3 px-6 bg-primary-500 text-white font-bold rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-opacity-50 transition-all duration-300 transform hover:-translate-y-1 shadow-lg"
@@ -86,9 +77,6 @@ const Lobby: React.FC<LobbyProps> = ({ username, onJoin, onChangeUsername }) => 
             Masuk & Main
           </button>
         </form>
-         <p className="text-xs text-gray-500 mt-4 text-center">
-             Buat room baru atau gabung dengan ID room yang ada.
-        </p>
       </div>
     </div>
   );
