@@ -1,4 +1,5 @@
-import React, { useEffect, useReducer, useRef } from 'react';
+
+import React, { useEffect, useReducer, useRef, useState } from 'react';
 import { GameState, Player, ChatMessage, ServerMessage, ClientMessage } from '../types';
 import TicTacToe from './TicTacToe';
 import Chat from './Chat';
@@ -42,10 +43,10 @@ function gameReducer(state: State, action: GameAction): State {
     case 'SET_ERROR':
       return { ...state, error: action.payload, connectionStatus: 'disconnected' };
     case 'SET_INITIAL_STATE':
-      // FIX: Access playerId from action, not action.payload
       return { ...state, gameState: action.payload, playerId: action.playerId };
     case 'PLAYER_JOINED':
       if (!state.gameState) return state;
+      if (state.gameState.players.some(p => p.id === action.payload.id)) return state;
       return {
         ...state,
         gameState: {
@@ -85,8 +86,16 @@ function gameReducer(state: State, action: GameAction): State {
   }
 }
 
+const LinkIcon: React.FC<{className?: string}> = ({className}) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+    </svg>
+);
+
+
 const GameRoom: React.FC<GameRoomProps> = ({ roomId, username, onLeave }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
+  const [showCopied, setShowCopied] = useState(false);
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -107,9 +116,30 @@ const GameRoom: React.FC<GameRoomProps> = ({ roomId, username, onLeave }) => {
       console.log('Received:', message);
 
       switch (message.type) {
-        case 'ROOM_JOINED':
-          dispatch({ type: 'SET_INITIAL_STATE', payload: message.payload.gameState, playerId: message.payload.playerId });
+        case 'ROOM_JOINED': {
+          const { roomId: joinedRoomId, players } = message.payload;
+          const me = players.find(p => p.username === username);
+
+          if (me) {
+            const initialGameState: GameState = {
+              roomId: joinedRoomId,
+              players,
+              chat: [],
+              game: {
+                board: Array(9).fill(null),
+                turn: '',
+                winner: null,
+                xPlayer: null,
+                oPlayer: null,
+              },
+              hostId: players.length > 0 ? players[0].id : null,
+            };
+            dispatch({ type: 'SET_INITIAL_STATE', payload: initialGameState, playerId: me.id });
+          } else {
+            dispatch({ type: 'SET_ERROR', payload: `Gagal menemukan pengguna "${username}" di dalam room.` });
+          }
           break;
+        }
         case 'PLAYER_JOINED':
           dispatch({ type: 'PLAYER_JOINED', payload: message.payload });
           break;
@@ -145,6 +175,13 @@ const GameRoom: React.FC<GameRoomProps> = ({ roomId, username, onLeave }) => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, username]);
+  
+  const handleInvite = () => {
+    navigator.clipboard.writeText(roomId).then(() => {
+      setShowCopied(true);
+      setTimeout(() => setShowCopied(false), 2000);
+    });
+  };
 
   const sendMessage = (message: ClientMessage) => {
     if (ws.current?.readyState === WebSocket.OPEN) {
@@ -192,7 +229,14 @@ const GameRoom: React.FC<GameRoomProps> = ({ roomId, username, onLeave }) => {
         <header className="flex flex-wrap justify-between items-center mb-6 gap-4">
             <div>
               <h1 className="text-4xl font-display font-bold text-gray-800">Tic-Tac-Toe</h1>
-              <p className="text-gray-600">Room ID: <span className="font-bold text-primary-500">{state.gameState.roomId}</span></p>
+                <div className="flex items-center gap-2 mt-1 relative">
+                    <p className="text-gray-600">Room ID: <span className="font-bold text-primary-500">{state.gameState.roomId}</span></p>
+                    <button onClick={handleInvite} className="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-800 font-semibold transition-colors" title="Salin ID Room">
+                        <LinkIcon className="w-4 h-4" />
+                        Undang Teman
+                    </button>
+                    {showCopied && <span className="absolute left-0 -bottom-7 text-xs bg-gray-800 text-white px-2 py-1 rounded-md animate-fade-in">ID Disalin!</span>}
+                </div>
             </div>
             <button onClick={onLeave} className="py-2 px-4 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition-colors">
                 Keluar

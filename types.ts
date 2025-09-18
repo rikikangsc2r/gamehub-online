@@ -54,9 +54,6 @@ export type ClientMessage =
 export interface RoomJoinedPayload {
   roomId: string;
   players: Player[];
-  gameState: GameState;
-  // FIX: Add playerId to the payload
-  playerId: string;
 }
 
 export interface PlayerJoinedPayload {
